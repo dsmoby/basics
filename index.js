@@ -21,6 +21,24 @@ const users = [
         name: "Sarah",
         email: "sara@sample.com",
         age: 46, 
+    },
+    {
+        id: "4",
+        name: "Usman",
+        email: "usmanl@sample.com",
+        age: 27, 
+    },
+    {
+        id: "5",
+        name: "Adam",
+        email: "adam@sample.com",
+        age: 35, 
+    },
+    {
+        id: "6",
+        name: "Manahil",
+        email: "manahil@sample.com",
+        age: 51, 
     }
 ]
 
@@ -100,6 +118,7 @@ const typeDefs = `
 
     type Mutation {
         createUser(data: CreateUserInput!): User!
+        deleteUser(id: ID!): User!
         createPost(data: CreatePostInput!): Post!
         createComment(data: CreateCommentInput!): Comment!
     }
@@ -161,7 +180,7 @@ const resolvers = {
             if (!args.query) {
                 return posts
             }
-            return posts.filter(post=> post.id === args.query)
+            return posts.filter(post => post.id === args.query)
         },
         comments(parent, args, ctx, info) {
             if (!args.pk) {
@@ -202,6 +221,14 @@ const resolvers = {
             users.push(user)
             return user
         }, 
+
+        deleteUser(parent, args, ctx, info) {
+            const userIndex = users.findIndex(user => user.id === args.id)
+            if (userIndex === -1) { throw new Error("user not found") } 
+            const deletedUser = users.splice(userIndex, 1)
+            return deletedUser[0]
+        },
+
         createPost(parent, args, ctx, info) {
             const existingAuthor = users.find(existing_user => existing_user.id === args.data.author)
             if (!existingAuthor) {
