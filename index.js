@@ -106,67 +106,7 @@ let comments = [
     }
 ]
 
-// Type Definitions (Schema)
-const typeDefs = `
-    type Query {
-       me: User!
-       users(query:String): [User!]!
-       posts(query:ID): [Post!]!
-       post: Post!
-       comments(pk:ID): [Comment!]
-    }
 
-    type Mutation {
-        createUser(data: CreateUserInput!): User!
-        deleteUser(id: ID!): User!
-        createPost(data: CreatePostInput!): Post!
-        deletePost(id: ID!): Post!
-        createComment(data: CreateCommentInput!): Comment!
-        deleteComment(id: ID!): Comment!
-    }
-
-    input CreateUserInput{
-        name:String!, 
-        email:String!, 
-        age: Int
-    }
-
-    input CreatePostInput{
-        title: String!, 
-        body: String!, 
-        author: ID!, 
-        published: Boolean!
-    }
-
-    input CreateCommentInput{
-        text: String!, 
-        author: ID!, 
-        post: ID!
-    }
-
-    type User{
-       id: ID!
-       name: String!
-       email: String!
-       age: Int
-       posts: [Post!]
-       comments: [Comment!]!
-    }
-    type Post{
-        id: ID!
-        title: String!
-        body: String!
-        published: Boolean!
-        author: User!
-        comments: [Comment!]!
-    }
-    type Comment{
-        id: ID!
-        text: String!
-        author: User!
-        post: Post!
-    }
-`
 // Resolver 
 
 const resolvers = {
@@ -333,15 +273,8 @@ const resolvers = {
 
 
 const server = new GraphQLServer({
-    typeDefs,
+    typeDefs: "./src/schema.graphql",
     resolvers
 })
 
 server.start(() => console.log("The server is up and running"))
-
-
-/*
-1. create a mutation for deleting a comment using non-nullable ID and return value of a non-nullable Post! type
-2. create a resolver function in the mutations category 
-
-*/
