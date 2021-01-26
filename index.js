@@ -3,7 +3,7 @@ import uuidv4 from "uuid/v4"
 
 // Scalar types: String, Boolean, Int, Float, ID
 
-const users = [
+let users = [
     {
         id: "1",
         name: "Nazli",
@@ -42,20 +42,20 @@ const users = [
     }
 ]
 
-const posts = [
+let posts = [
     {
         id: "1", 
         title: "GraphQL Advantages",
         body: "single endpoint, fast, flexible, efficient, self-documenting",
         author: "1",
-        published: false 
+        published: true 
     }, 
     {
         id: "2",
         title: "How to GraphQL ",
         body: "It is easy to learn about graphQL since so many libraries are available",
         author: "2",
-        published: false 
+        published: true 
     },
     {
         id: "3",
@@ -73,7 +73,7 @@ const posts = [
     }
 ]
 
-const comments = [
+let comments = [
     {
         id: "1",
         text: "well this post is very informative",
@@ -102,7 +102,7 @@ const comments = [
         id: "5",
         text: "Thank you, very informative and to the point",
         author: "2",
-        post: "3"
+        post: "2"
     }
 ]
 
@@ -120,7 +120,9 @@ const typeDefs = `
         createUser(data: CreateUserInput!): User!
         deleteUser(id: ID!): User!
         createPost(data: CreatePostInput!): Post!
+        deletePost(id: ID!): Post!
         createComment(data: CreateCommentInput!): Comment!
+        deleteComment(id: ID!): Comment!
     }
 
     input CreateUserInput{
@@ -224,8 +226,17 @@ const resolvers = {
 
         deleteUser(parent, args, ctx, info) {
             const userIndex = users.findIndex(user => user.id === args.id)
+
             if (userIndex === -1) { throw new Error("user not found") } 
+
             const deletedUser = users.splice(userIndex, 1)
+
+            posts = posts.filter(post => {
+                comments.filter(comment => comment.post !== post.id )
+                return post.author !== args.id
+            })
+
+            comments = comments.filter(comment => comment.author !== args.id)
             return deletedUser[0]
         },
 
@@ -244,9 +255,23 @@ const resolvers = {
             return new_post
 
         },
+
+        deletePost(parent, args, ctx, info) {
+            const postIndex = posts.findIndex( current_post => current_post.id === args.id)
+            if (postIndex === -1) {
+                throw new Error("Post does not exist")
+            }
+            const deletedPost = posts.splice(postIndex, 1)
+                
+            comments = comments.filter(current_comment => current_comment.post !== args.id)
+             
+            return deletedPost[0]
+        },
+
         createComment(parent, args, ctx, info) {
             const userExists = users.find(existing_user => existing_user.id === args.data.author)
-            const postExists = posts.find(existig_post => existig_post.id === args.data.post && existig_post.published )
+            const postExists = posts.find(existig_post => existig_post.id === args.data.post && existig_post.published)
+            const commentExists = comments.find(cur_cmnt => cur_cmnt.text === args.data.text && cur_cmnt.author === args.data.author && cur_cmnt.post === args.data.post )
 
             if (!userExists) {
                 throw new Error("The user does not exist")
@@ -255,6 +280,10 @@ const resolvers = {
             if (!postExists) {
                 throw new Error("The post not found")
             }
+            
+            if (commentExists) {
+                throw new Error("You already posted the comment")
+            }
 
             const newComment = {
                 id: uuidv4(),
@@ -262,6 +291,16 @@ const resolvers = {
             }
             comments.push(newComment)
             return newComment
+        },
+        deleteComment(parent, args, ctx, info) {
+            const commentIdx = comments.findIndex(cur_cmnt => cur_cmnt.id === args.id)
+            if (commentIdx === -1) {
+                throw new Error("Comment not found")
+            }
+
+            const deleteCmnt = comments.splice(commentIdx, 1)
+
+            return deleteCmnt[0]
         }
 
     },
@@ -299,3 +338,10 @@ const server = new GraphQLServer({
 })
 
 server.start(() => console.log("The server is up and running"))
+
+
+/*
+1. create a mutation for deleting a comment using non-nullable ID and return value of a non-nullable Post! type
+2. create a resolver function in the mutations category 
+
+*/
