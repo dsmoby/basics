@@ -146,6 +146,31 @@ const Mutation = {
         const deleteCmnt = db.comments.splice(commentIdx, 1)
 
         return deleteCmnt[0]
+    },
+    updateComment(parent, args, { db }, info) {
+        const {id, data} = args
+        const comment = db.comments.find(cmnt => cmnt.id === id)
+
+        if (!comment) {
+            throw new Error("Comment not found")
+        }
+
+        if (typeof data.text !== 'string') {
+            throw new Error("Invalid Type. Please enter a string only")
+        }
+
+
+        if (data.text !== comment.text) {
+            comment.text = data.text
+            console.log("comment updated")
+        }
+        else {
+            console.log("comment did not update since there's no change")
+        }
+
+
+        return comment
+
     }
 
 }
