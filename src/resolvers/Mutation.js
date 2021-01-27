@@ -39,8 +39,9 @@ const Mutation = {
             throw new Error("User not found")
         }
 
-        if (typeof data.email === 'string') {
+        if (typeof data.email === 'string' && user.email !== data.email) {
             const emailTaken = db.users.some(cur_user => cur_user.email === data.email)
+
             if (emailTaken) {
                 throw new Error("Email already taken")
             }
