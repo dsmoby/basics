@@ -113,7 +113,7 @@ const Mutation = {
         return post
     },
 
-    createComment(parent, args, {db}, info) {
+    createComment(parent, args, {db, pubsub }, info) {
         const userExists = db.users.find(existing_user => existing_user.id === args.data.author)
         const postExists = db.posts.find(existig_post => existig_post.id === args.data.post && existig_post.published)
         const commentExists = db.comments.find(cur_cmnt => cur_cmnt.text === args.data.text && cur_cmnt.author === args.data.author && cur_cmnt.post === args.data.post )
@@ -134,7 +134,12 @@ const Mutation = {
             id: uuidv4(),
             ...args.data
         }
+
+
         db.comments.push(newComment)
+
+        pubsub.publish(`comment ${args.data.post}`, { comment: newComment })
+
         return newComment
     },
     deleteComment(parent, args, {db}, info) {
